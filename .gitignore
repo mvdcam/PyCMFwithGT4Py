@@ -1,11 +1,17 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+__pycache__
 *.py[cod]
 *$py.class
 
-GT4Py
+# GT4Py
 **/.gt_cache/
 .gt_cache/
+.dace.conf
+
+# Perso 
+.DS_Store
+
+
 
 # C extensions
 *.so
