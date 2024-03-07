@@ -20,6 +20,7 @@ class EarthBase():
     land_energy: gtscript.Field[float]
     land_mass: gtscript.Field[float]
     chunk_mass: gtscript.Field[float]
+    heat_transfer_coefficient: gtscript.Field[float]
     backend: str
 
 
@@ -56,8 +57,9 @@ class EarthBase():
         self.air_mass = gt_storage.from_array(air_mass, backend=backend)
         self.land_energy = gt_storage.from_array(land_energy, backend=backend)
         self.land_mass = gt_storage.from_array(land_mass, backend=backend)
-        self.chunk_mass = gt_storage.from_array(np.zeros(shape), backend=backend)
-        self.chunk_temp = gt_storage.from_array(np.zeros(shape), backend=backend)
+        self.chunk_mass = gt_storage.empty(self.shape, dtype=float, backend=backend)
+        self.chunk_temp = gt_storage.empty(self.shape, dtype=float, backend=backend)
+        self.heat_transfer_coefficient = gt_storage.empty(self.shape, dtype=float, backend=backend)
         self.backend = backend
         
         
