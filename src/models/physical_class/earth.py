@@ -31,6 +31,8 @@ class Earth(EarthBase, CelestialBody):
         self.get_universe().discover_everything()
         self.backend = backend
 
+        
+
         @gtscript.function
         def component_ratio(component_mass: gtscript.Field[float], chunk_mass: gtscript.Field[float]) -> float:
             return component_mass[0, 0, 0] / chunk_mass[0, 0, 0]
@@ -41,9 +43,19 @@ class Earth(EarthBase, CelestialBody):
                                               chunk_mass: gtscript.Field[float],
                                               heat_transfer_coefficient: gtscript.Field[float]):
             with computation(PARALLEL), interval(...):
-                heat_transfer_coefficient = component_ratio(water_mass, chunk_mass) * constants.WATER_HEAT_TRANSFER_COEFFICIENT + \
-                                             component_ratio(air_mass, chunk_mass) * constants.AIR_HEAT_TRANSFER_COEFFICIENT + \
-                                                component_ratio(land_mass, chunk_mass) * constants.LAND_HEAT_TRANSFER_COEFFICIENT
+                heat_transfer_coefficient = component_ratio(water_mass, chunk_mass) * 2 + \
+                                             component_ratio(air_mass, chunk_mass) * 2 + \
+                                                component_ratio(land_mass, chunk_mass) * 2
+        
+        def compute_specific_heat_capacity(water_mass: gtscript.Field[float], 
+                                              air_mass: gtscript.Field[float], 
+                                              land_mass: gtscript.Field[float], 
+                                              chunk_mass: gtscript.Field[float],
+                                              specific_heat_capacity: gtscript.Field[float]):
+            with computation(PARALLEL), interval(...):
+                specific_heat_capacity = component_ratio(water_mass, chunk_mass) * constants.WATER_HEAT_CAPACITY + \
+                                             component_ratio(air_mass, chunk_mass) * constants.AIR_HEAT_CAPACITY + \
+                                                component_ratio(land_mass, chunk_mass) * constants.LAND_HEAT_CAPACITY
                 
         def compute_chunk_composition(water_mass: gtscript.Field[float], 
                                       air_mass: gtscript.Field[float], 
@@ -105,7 +117,6 @@ class Earth(EarthBase, CelestialBody):
                 chunk_mass = water_mass[0, 0, 0] + air_mass[0, 0, 0] + land_mass[0, 0, 0]
 
 
-        
         def sum_vertical_values(in_field: gtscript.Field[float],
                            out_field: gtscript.Field[float]):
             """
@@ -114,7 +125,7 @@ class Earth(EarthBase, CelestialBody):
             :param out_field:
             :return:
             """
-            with computation(BACKWARD), interval(...):
+            with computation(PARALLEL), interval(...):
                 out_field = in_field[0, 0, 0] # First copy the field
             with computation(BACKWARD), interval(0, -1):
                 out_field += out_field[0, 0, 1] # Then add the next element to the previous one
@@ -150,6 +161,13 @@ class Earth(EarthBase, CelestialBody):
         self._temperature_to_energy_field = gtscript.stencil(definition=temperature_to_energy_field, backend=self.backend)
         self._compute_heat_transfer_coefficient = gtscript.stencil(definition=compute_heat_transfer_coefficient, backend=self.backend)
         self._compute_chunk_composition = gtscript.stencil(definition=compute_chunk_composition, backend=self.backend)
+        self._compute_specific_heat_capacity = gtscript.stencil(definition=compute_specific_heat_capacity, backend=self.backend)
+
+        self._compute_heat_transfer_coefficient(self.water_mass, self.air_mass, self.land_mass, self.chunk_mass, self.heat_transfer_coefficient)
+        self._compute_specific_heat_capacity(self.water_mass, self.air_mass, self.land_mass, self.chunk_mass, self.specific_heat_capacity)
+        print(self.heat_transfer_coefficient[0, 0, 0])
+        print(self.specific_heat_capacity[0, 0, 0])
+
 
     def sum_horizontal_values(self, field: gtscript.Field[float]):
         """

@@ -21,12 +21,12 @@ if __name__ == "__main__":
         backend = "numpy"
         universe = Universe()
         universe.sun = TickingSun()  # Can be replaced with Sun()
-        universe.earth = TickingEarth(shape=(400, 400, 400), backend=backend)  # Use 1 as the z dimension if you want a 2D grid
+        print("Generating the earth...")
+        universe.earth = TickingEarth(shape=(400, 400, 2), backend=backend)  # Use 1 as the z dimension if you want a 2D grid
         universe.discover_everything()
 
         # Fills the earth with random GridChunk of water
         filling_density = 1
-        print("Generating the earth...")
         universe.earth.fill_with_water()
 
         print("Done.")
