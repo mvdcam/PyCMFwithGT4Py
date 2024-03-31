@@ -163,10 +163,6 @@ class Earth(EarthBase, CelestialBody):
         self._compute_chunk_composition = gtscript.stencil(definition=compute_chunk_composition, backend=self.backend)
         self._compute_specific_heat_capacity = gtscript.stencil(definition=compute_specific_heat_capacity, backend=self.backend)
 
-        self._compute_heat_transfer_coefficient(self.water_mass, self.air_mass, self.land_mass, self.chunk_mass, self.heat_transfer_coefficient)
-        self._compute_specific_heat_capacity(self.water_mass, self.air_mass, self.land_mass, self.chunk_mass, self.specific_heat_capacity)
-        print(self.heat_transfer_coefficient[0, 0, 0])
-        print(self.specific_heat_capacity[0, 0, 0])
 
 
     def sum_horizontal_values(self, field: gtscript.Field[float]):
@@ -280,6 +276,10 @@ class Earth(EarthBase, CelestialBody):
         self.water_mass = gt_storage.from_array(np.full(shape=self.shape, fill_value=1000), backend=self.backend)
         water_temp = gt_storage.from_array(np.random.uniform(290, 310, self.shape), backend=self.backend)
         self._temperature_to_energy_field(water_temp, self.water_mass, self.water_energy)
+
+        self._compute_chunk_mass(self.water_mass, self.air_mass, self.land_mass, self.chunk_mass)
+        self._compute_heat_transfer_coefficient(self.water_mass, self.air_mass, self.land_mass, self.chunk_mass, self.heat_transfer_coefficient)
+        self._compute_specific_heat_capacity(self.water_mass, self.air_mass, self.land_mass, self.chunk_mass, self.specific_heat_capacity)
     
 
 
