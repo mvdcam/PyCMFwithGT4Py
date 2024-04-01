@@ -24,7 +24,7 @@ class TickingEarth(Earth, TickingModel):
         @gtscript.function
         def temp_coefficient(heat_transfer_coefficient: gtscript.Field[float],
                              specific_heat_capacity: gtscript.Field[float]):
-            return heat_transfer_coefficient[0,0,0] * specific_heat_capacity[0,0,0]# * self.time_delta
+            return heat_transfer_coefficient[0,0,0] * specific_heat_capacity[0,0,0] * self.time_delta
         
 
         def average_temperature_update(in_field: gtscript.Field[float], energy: gtscript.Field[float], heat_transfer_coefficient: gtscript.Field[float], specific_heat_capacity: gtscript.Field[float]):
@@ -275,7 +275,7 @@ class TickingEarth(Earth, TickingModel):
         self._average_temperature_update(self.chunk_temp, self.water_energy, self.heat_transfer_coefficient, self.specific_heat_capacity)
 
 
-    @TickingModel.on_tick(enabled=True)
+    @TickingModel.on_tick(enabled=False)
     def water_evaporation(self):
         """
         Evaporate water from the water component of the grid chunk

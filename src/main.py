@@ -22,7 +22,7 @@ if __name__ == "__main__":
         universe = Universe()
         universe.sun = TickingSun()  # Can be replaced with Sun()
         print("Generating the earth...")
-        universe.earth = TickingEarth(shape=(400, 400, 2), backend=backend)  # Use 1 as the z dimension if you want a 2D grid
+        universe.earth = TickingEarth(shape=(40, 40, 40), backend=backend)  # Use 1 as the z dimension if you want a 2D grid
         universe.discover_everything()
 
         # Fills the earth with random GridChunk of water

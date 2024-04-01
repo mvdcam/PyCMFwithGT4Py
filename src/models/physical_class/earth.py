@@ -43,9 +43,9 @@ class Earth(EarthBase, CelestialBody):
                                               chunk_mass: gtscript.Field[float],
                                               heat_transfer_coefficient: gtscript.Field[float]):
             with computation(PARALLEL), interval(...):
-                heat_transfer_coefficient = component_ratio(water_mass, chunk_mass) * 2 + \
-                                             component_ratio(air_mass, chunk_mass) * 2 + \
-                                                component_ratio(land_mass, chunk_mass) * 2
+                heat_transfer_coefficient = component_ratio(water_mass, chunk_mass) * constants.WATER_HEAT_TRANSFER_COEFFICIENT + \
+                                             component_ratio(air_mass, chunk_mass) * constants.AIR_HEAT_TRANSFER_COEFFICIENT + \
+                                                component_ratio(land_mass, chunk_mass) * constants.LAND_HEAT_TRANSFER_COEFFICIENT
         
         def compute_specific_heat_capacity(water_mass: gtscript.Field[float], 
                                               air_mass: gtscript.Field[float], 
@@ -91,13 +91,17 @@ class Earth(EarthBase, CelestialBody):
             land_energy: gtscript.Field[float], 
             land_mass: gtscript.Field[float]) -> float:
             temp = 0.0
+            nb_components = 0
             if water_mass[0, 0, 0] != 0:
                 temp += water_energy[0, 0, 0] / (constants.WATER_HEAT_CAPACITY * water_mass[0, 0, 0])
+                nb_components += 1
             if air_mass[0, 0, 0] != 0:
                 temp += air_energy[0, 0, 0] / (constants.AIR_HEAT_CAPACITY * air_mass[0, 0, 0])
+                nb_components += 1
             if land_mass[0, 0, 0] != 0:
                 temp += land_energy[0, 0, 0] / (constants.LAND_HEAT_CAPACITY * land_mass[0, 0, 0])
-            return temp
+                nb_components += 1
+            return temp / nb_components
 
         def compute_chunk_temperature(water_energy: gtscript.Field[float], 
                                         water_mass: gtscript.Field[float], 
@@ -137,22 +141,18 @@ class Earth(EarthBase, CelestialBody):
                        air_energy: gtscript.Field[float], 
                        air_mass: gtscript.Field[float], 
                        land_energy: gtscript.Field[float], 
-                       land_mass: gtscript.Field[float],
-                       number_of_chunks: int = len(self)):
+                       land_mass: gtscript.Field[float]):
             """
-            Distribute energy on all the components of the planet uniformly
-            :param input_energy:
-            :return:
+            Distribute a same amount of energy on all the chunk of the earth
             """
             with computation(PARALLEL), interval(...):
-                chunk_input_energy = input_energy / number_of_chunks
                 chunk_mass = (water_mass[0, 0, 0] + air_mass[0, 0, 0] + land_mass[0, 0, 0])
                 if water_mass[0, 0, 0] != 0:
-                    water_energy[0, 0, 0] += chunk_input_energy * (water_mass[0, 0, 0]/chunk_mass)
+                    water_energy[0, 0, 0] += input_energy * (water_mass[0, 0, 0]/chunk_mass)
                 if air_mass[0, 0, 0] != 0:
-                    air_energy[0, 0, 0] += chunk_input_energy * (air_mass[0, 0, 0]/chunk_mass)
+                    air_energy[0, 0, 0] += input_energy * (air_mass[0, 0, 0]/chunk_mass)
                 if land_mass[0, 0, 0] != 0:
-                    land_energy[0, 0, 0] += chunk_input_energy * (land_mass[0, 0, 0]/chunk_mass)
+                    land_energy[0, 0, 0] += input_energy * (land_mass[0, 0, 0]/chunk_mass)
 
         self._add_energy = gtscript.stencil(definition=add_energy, backend=self.backend)
         self._compute_chunk_mass = gtscript.stencil(definition=compute_chunk_mass, backend=self.backend)
@@ -180,12 +180,15 @@ class Earth(EarthBase, CelestialBody):
 
     @property
     def average_temperature(self) -> float:
+        print("Computing average temperature")
         self._compute_chunk_temperature(self.water_energy, self.water_mass, self.air_energy, self.air_mass, self.land_energy, self.land_mass, self.chunk_temp)
         temp_total_temperature = gt_storage.empty(self.shape, dtype=float, backend=self.backend)
         self._sum_vertical_values(self.chunk_temp, temp_total_temperature)
         self._average_temperature = self.sum_horizontal_values(temp_total_temperature) / len(self)
-        print("Computing average temperature")
+        
         return self._average_temperature
+
+        
 
     @property
     def total_mass(self) -> float:
@@ -255,12 +258,10 @@ class Earth(EarthBase, CelestialBody):
         return energy / (mass * heat_capacity)
 
 
-
-    def compute_total_energy(self): # TODO: Only for testing purposes
-        return sum(elem.energy for elem in self.not_nones())
-
     def receive_radiation(self, energy: float):
-        self._add_energy(input_energy=(energy * (1 - self.albedo)), 
+        energy = energy * (1 - self.albedo)
+        input_energy = energy/len(self)
+        self._add_energy(input_energy=input_energy, 
                           water_energy=self.water_energy,
                           water_mass=self.water_mass, 
                           air_energy=self.air_energy,
