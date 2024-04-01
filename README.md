@@ -1,17 +1,18 @@
-# PyCMF
+# PyCMF with GT4Py
 
 ## Objectives
 
-The objective of this project was to experiment with Object-Oriented technology in a Climate Modelling context. We used Climate Models as a basis on which to build a framework in OO to research the advantages and drawback of the use of Object-Oriented in a compute-intensive setting.
+This project is based on a previous work called PyCMF which aimed to experiment Object-Oriented technology and the use of Python in a Climate Modelling context. It concluded that OO brings a lot of flexibility and modularity to the code, but that it is not the best choice for performance. This project aims to improve the performance of the PyCMF framework by using GT4Py, a library that allows to generate high-performance code for stencil computations on structured grids. This project aimed to keep as much as possible the original structure of PyCMF, while adding the GT4Py code generation for the most performance-critical parts of the code. We will see that the performance of the code is greatly improved, but that the OO structure of PyCMF had to be adapted to the GT4Py code generation especially for the grid modelisation.
+
+The graphical interface of PyCMF has not been ported to this version, as it was not the main focus of this project and the code needed some adaptation as we use a newer Python version. 
 
 ## Introduction
 
-PYthon Climate Modelling Framework (or PyCMF for short) is a framework developped as part of my Master's thesis in Computer Science at
-the ULB. The framework provides 3 layers of implementation :
+Python Climate Modelling Framework (or PyCMF for short) is a framework developped by Nathan Marotte as part of his Master's thesis at the Université Libre de Bruxelles. 
 
-- base_class (earth_base, grid_chunk_base, etc ...) and inheriting from BaseModel : Contains the basic
+- base_class (earth_base, sun_base, etc ...) and inheriting from BaseModel : Contains the basic
   structural/pythonic stuff for the class (correct inheritance, redefinition of dunder methods, etc ...)
-- physical_class (earth, grid_chunk, etc ...) and inheriting from its base_class : Contains the physical properties (temperature, mass, etc ...) and
+- physical_class (earth, sun, etc ...) and inheriting from its base_class : Contains the physical properties (temperature, mass, etc ...) and
   method (behaviour for receiving electromagnetic radiation, etc ... ) for that class 
 - ticking_class (ticking_earth, ticking_universe, etc ...) and inheriting from its physical_class as well as
   TickableModel, that is an interface to store all the class methods that have to be executed at each time step of the
@@ -24,15 +25,13 @@ few examples with placeholder simulations such as the averaging of the temperatu
 
 ### Required Libraries
 
-- unittest for testing
-- PyQt5 for the graphical interface
 - numpy for the models
+- GT4Py for the stencils generation
 
 
 To run the framework, you can edit the script in `main.py` and then execute it with `python3.9 main.py`.
 
-For running the program with the graphical interface, you can use the GUI command line argument and
-execute `python3.9 main.py GUI`. In that way you will be able to dynamically change the simulation
+
 
 ## How to add a new model
 
