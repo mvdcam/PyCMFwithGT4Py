@@ -73,6 +73,7 @@ class Earth(EarthBase, CelestialBody):
         def temperature_to_energy(temperature: gtscript.Field[float], mass: gtscript.Field[float]) -> float:
             """
             Set the temperature of the component by computing the energy from the mass and the temperature
+            Water specific is our case (as it is only used to generate a full of water earth)
             :param temperature:
             :return:
             """
@@ -135,7 +136,7 @@ class Earth(EarthBase, CelestialBody):
                 out_field += out_field[0, 0, 1] # Then add the next element to the previous one
         
 
-        def add_energy(input_energy: float,
+        def add_energy(input_energy: gtscript.Field[float],
                        water_energy: gtscript.Field[float], 
                        water_mass: gtscript.Field[float], 
                        air_energy: gtscript.Field[float], 
@@ -198,6 +199,14 @@ class Earth(EarthBase, CelestialBody):
         self._total_mass = self.sum_horizontal_values(temp_total_mass)
         print("Computing total mass")
         return self._total_mass
+    
+    @property
+    def total_energy(self) -> float:
+        temp_total_energy = gt_storage.empty(self.shape, dtype=float, backend=self.backend)
+        self._compute_chunk_mass(self.water_energy, self.air_energy, self.land_energy, temp_total_energy)
+        temp_sum_energy = gt_storage.empty(self.shape, dtype=float, backend=self.backend)
+        self._sum_vertical_values(temp_total_energy, temp_sum_energy)
+        return self.sum_horizontal_values(temp_sum_energy)
 
 
     @property
@@ -245,6 +254,7 @@ class Earth(EarthBase, CelestialBody):
         res = f"Earth : \n" \
               f"- Mass {self.total_mass}\n" \
               f"- Average temperature: {self.average_temperature}\n" \
+              f"- Total energy: {self.total_energy}\n" \
               f"- Composition: \n\t{f'{chr(10) + chr(9)} '.join(str(round(value * 100, 2)) + '% ' + key for key, value in self.composition.items())}"
         return res
     
@@ -261,7 +271,8 @@ class Earth(EarthBase, CelestialBody):
     def receive_radiation(self, energy: float):
         energy = energy * (1 - self.albedo)
         input_energy = energy/len(self)
-        self._add_energy(input_energy=input_energy, 
+        input_energy_field = gt_storage.full(self.shape, input_energy, backend=self.backend)
+        self._add_energy(input_energy=input_energy_field, 
                           water_energy=self.water_energy,
                           water_mass=self.water_mass, 
                           air_energy=self.air_energy,

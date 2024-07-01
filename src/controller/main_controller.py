@@ -18,9 +18,11 @@ class MainController:
 
     def __init__(self):
         self.model = Universe()
-        self.model.earth = TickingEarth(shape=CANVAS_SIZE, parent=self.model)
+        self.model.earth = TickingEarth(shape=(CANVAS_SIZE[0], CANVAS_SIZE[1], 2), parent=self.model)
         self.model.sun = TickingSun()
         self.model.discover_everything()
+        self.model.earth.fill_with_water()
+
         self.message_controller = MessageController(parent_controller=self)
         self.toolbar_controller = ToolbarController(parent_controller=self)
         self.canvas_controller = CanvasAreaController(parent_controller=self)
@@ -30,7 +32,7 @@ class MainController:
     def clear_pressed(self):
         self.canvas_controller.clear_canvas()
         self.model = Universe()
-        self.model.earth = TickingEarth(shape=CANVAS_SIZE, parent=self.model)
+        self.model.earth = TickingEarth(shape=(CANVAS_SIZE[0], CANVAS_SIZE[1], 2), parent=self.model)
         self.model.sun = TickingSun()
 
     def start_pressed(self):

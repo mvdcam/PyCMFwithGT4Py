@@ -2,6 +2,7 @@ import math
 
 from gt4py.cartesian import gtscript
 from gt4py.cartesian.gtscript import PARALLEL, BACKWARD, computation, interval, horizontal, region, I, J, K, IJ, IJK, Field
+import gt4py.storage as gt_storage
 
 from models.ABC.ticking_model import TickingModel
 from models.physical_class.earth import Earth
@@ -272,7 +273,9 @@ class TickingEarth(Earth, TickingModel):
         :return:
         """
         self._compute_chunk_temperature(self.water_energy, self.water_mass, self.air_energy, self.air_mass, self.land_energy, self.land_mass, self.chunk_temp)
-        self._average_temperature_update(self.chunk_temp, self.water_energy, self.heat_transfer_coefficient, self.specific_heat_capacity)
+        temp_energy = gt_storage.zeros(self.shape, dtype=float, backend=self.backend)
+        self._average_temperature_update(self.chunk_temp, temp_energy, self.heat_transfer_coefficient, self.specific_heat_capacity)
+        self._add_energy(temp_energy, self.water_energy, self.water_mass, self.air_energy, self.air_mass, self.land_energy, self.land_mass)
 
 
     @TickingModel.on_tick(enabled=False)
