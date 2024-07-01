@@ -6,7 +6,6 @@ import gt4py.storage as gt_storage
 
 from models.ABC.ticking_model import TickingModel
 from models.physical_class.earth import Earth
-from models.ticking_class.ticking_grid_chunk import TickingGridChunk
 
 
 class TickingEarth(Earth, TickingModel):
@@ -242,29 +241,6 @@ class TickingEarth(Earth, TickingModel):
 
         """
         super().update()
-
-    # @TickingModel.on_tick(enabled=True)
-    # def average_temperature(self):
-    #     """
-    #     Balances the temperature of each point on the earth
-    #     :return:
-    #     """
-    #     temperature_gradiant = {}
-    #     # First sweep of finding the temperature difference
-    #     for elem in self.not_nones():
-    #         for neighbour in elem.neighbours:
-    #             if neighbour.index < elem.index or math.isclose(neighbour.temperature - elem.temperature, 0): # numpy.isclose exists
-    #                 continue  # Already computed the other way around
-    #             temperature_gradiant[(elem.index, neighbour.index)] = neighbour.temperature - elem.temperature
-    #     # Second sweep to apply the difference
-    #     for elem in self.not_nones():
-    #         for neighbour in elem.neighbours:
-    #             if neighbour.index < elem.index or (elem.index, neighbour.index) not in temperature_gradiant:
-    #                 continue  # Already computed the other way around
-    #             energy_exchanged = temperature_gradiant[(elem.index,
-    #                                                      neighbour.index)] * elem.heat_transfer_coefficient * self.get_universe().TIME_DELTA / elem.surface
-    #             elem.add_energy(energy_exchanged * elem.specific_heat_capacity)
-    #             neighbour.add_energy(-energy_exchanged * elem.specific_heat_capacity)
 
     @TickingModel.on_tick(enabled=True)
     def update_temperature(self):

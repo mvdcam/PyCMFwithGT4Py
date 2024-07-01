@@ -1,6 +1,5 @@
 from models.ABC.celestial_body import CelestialBody
 from models.base_class.earth_base import EarthBase
-from models.physical_class.grid_chunk import GridChunk
 import constants
 
 

@@ -1,21 +1,14 @@
 import random
 import sys
 
-from PyQt5 import QtWidgets
 from tqdm import trange
 
-from controller.main_controller import MainController
-#from models.physical_class.grid_chunk import GridChunk
 from models.physical_class.universe import Universe
 from models.ticking_class.ticking_earth import TickingEarth
 from models.ticking_class.ticking_sun import TickingSun
 
 if __name__ == "__main__":
     if len(sys.argv) >= 2 and sys.argv[1] == "GUI":
-        app = QtWidgets.QApplication([])
-        controller = MainController()
-
-        controller.view.show()
         app.exec_()
     else:
         backend = "numpy"
