@@ -255,7 +255,7 @@ class Earth(EarthBase, CelestialBody):
               f"- Mass {self.total_mass}\n" \
               f"- Average temperature: {self.average_temperature}\n" \
               f"- Total energy: {self.total_energy}\n" \
-              f"- Composition: \n\t{f'{chr(10) + chr(9)} '.join(str(round(value * 100, 2)) + '% ' + key for key, value in self.composition.items())}"
+              f"- Composition: \n\t{f'{chr(10) + chr(9)} '.join(str(value * 100, 2) + '% ' + key for key, value in self.composition.items())}"
         return res
     
     
