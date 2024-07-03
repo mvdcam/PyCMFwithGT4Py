@@ -27,186 +27,20 @@ class TickingEarth(Earth, TickingModel):
             return heat_transfer_coefficient[0,0,0] * specific_heat_capacity[0,0,0] * self.time_delta
         
 
-        def average_temperature_update(in_field: gtscript.Field[float], energy: gtscript.Field[float], heat_transfer_coefficient: gtscript.Field[float], specific_heat_capacity: gtscript.Field[float]):
+        def compute_energy_transfer(in_field: gtscript.Field[float], energy: gtscript.Field[float], heat_transfer_coefficient: gtscript.Field[float], specific_heat_capacity: gtscript.Field[float]):
             """
-            Update the temperature of a single grid chunk
+            compute the energy transfer between the grid chunk and its neighbors
             :param grid_chunk:
             :return:
             """
-            with computation(PARALLEL): 
-                with interval(0, 1): # Bottom face K = 0
-                    # All bottom corners
-                    with horizontal(region[I[0], J[0]]): # Bottom left corner
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[-1], J[0]]): # Bottom right corner
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity) 
-
-                    with horizontal(region[I[0], J[-1]]): # Top left corner
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[-1], J[-1]]): # Top right corner
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    # All bottom edges
-                    with horizontal(region[I[1]:I[-1], J[0]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[1]:I[-1], J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[0], J[1]:J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        
-                    with horizontal(region[I[-1], J[1]:J[-1]]):
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    # All other points of the bottom face
-                    with horizontal(region[I[1]:I[-1], J[1]:J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                with interval(1, -1): # Middle faces & core points
-                    # All middle edges
-                    with horizontal(region[I[0], J[0]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[-1], J[0]]):
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[0], J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[-1], J[-1]]):
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                    
-                    # All other points of the middle faces
-                    with horizontal(region[I[1]:I[-1], J[0]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[1]:I[-1], J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[0], J[1]:J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                    
-                    with horizontal(region[I[-1], J[1]:J[-1]]):
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    # All other points of the cube
-                    with horizontal(region[I[1]:I[-1], J[1]:J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                
-                with interval(-1, None): # Top face K = -1
-                    # All top corners
-                    with horizontal(region[I[0], J[0]]): # Bottom left corner
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[-1], J[0]]): # Bottom right corner
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[0], J[-1]]): # Top left corner
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[-1], J[-1]]): # Top right corner
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    # All top edges
-                    with horizontal(region[I[1]:I[-1], J[0]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[1]:I[-1], J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    with horizontal(region[I[0], J[1]:J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        
-                    with horizontal(region[I[-1], J[1]:J[-1]]):
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-
-                    # All other points of the top face
-                    with horizontal(region[I[1]:I[-1], J[1]:J[-1]]):
-                        energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
-                        energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
+            with computation(PARALLEL), interval(...):
+                coeff = temp_coefficient(heat_transfer_coefficient, specific_heat_capacity)
+                energy += (in_field[1, 0, 0] - in_field[0, 0, 0]) * coeff
+                energy += (in_field[-1, 0, 0] - in_field[0, 0, 0]) * coeff
+                energy += (in_field[0, 1, 0] - in_field[0, 0, 0]) * coeff
+                energy += (in_field[0, -1, 0] - in_field[0, 0, 0]) * coeff
+                energy += (in_field[0, 0, 1] - in_field[0, 0, 0]) * coeff
+                energy += (in_field[0, 0, -1] - in_field[0, 0, 0]) * coeff
 
 
         def water_evaporation(water_mass: gtscript.Field[float], air_mass: gtscript.Field[float]):
@@ -230,7 +64,7 @@ class TickingEarth(Earth, TickingModel):
 
 
         self._water_evaporation = gtscript.stencil(definition=water_evaporation, backend=self.backend)
-        self._average_temperature_update = gtscript.stencil(definition=average_temperature_update, backend=self.backend)
+        self._compute_energy_transfer = gtscript.stencil(definition=compute_energy_transfer, backend=self.backend)
         self._carbon_cycle = gtscript.stencil(definition=carbon_cycle, backend=self.backend)
 
     def update(self):
@@ -250,7 +84,7 @@ class TickingEarth(Earth, TickingModel):
         """
         self._compute_chunk_temperature(self.water_energy, self.water_mass, self.air_energy, self.air_mass, self.land_energy, self.land_mass, self.chunk_temp)
         temp_energy = gt_storage.zeros(self.shape, dtype=float, backend=self.backend)
-        self._average_temperature_update(self.chunk_temp, temp_energy, self.heat_transfer_coefficient, self.specific_heat_capacity)
+        self._compute_energy_transfer(self.chunk_temp, temp_energy, self.heat_transfer_coefficient, self.specific_heat_capacity, origin=self.origin)
         self._add_energy(temp_energy, self.water_energy, self.water_mass, self.air_energy, self.air_mass, self.land_energy, self.land_mass)
 
 

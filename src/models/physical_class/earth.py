@@ -29,6 +29,7 @@ class Earth(EarthBase, CelestialBody):
         self.get_universe().earth = self
         self.get_universe().discover_everything()
         self.backend = backend
+        self.origin = (1, 1, 1)
 
         
 
