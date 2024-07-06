@@ -17,7 +17,7 @@ np.random.seed(0)
 def init_graph():
     fig, ax = plt.subplots()
     # Do not plot the borders
-    #cax = ax.matshow(universe.earth.chunk_temp[1:-1,1:-1,20], cmap='coolwarm')
+    cax = ax.matshow(universe.earth.chunk_temp[1:-1,1:-1,20], cmap='coolwarm')
     fig.colorbar(cax)
     plt.savefig("initial_plot.png")
     plt.ion()

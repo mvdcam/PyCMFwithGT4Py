@@ -12,7 +12,7 @@
 .DS_Store
 *.png
 src/models/physical_class/transfer_energy2.py
-
+*.json
 
 
 # C extensions
