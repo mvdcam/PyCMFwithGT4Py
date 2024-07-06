@@ -168,16 +168,12 @@ class Earth(EarthBase, CelestialBody):
 
     def sum_horizontal_values(self, field: gtscript.Field[float]):
         """
-        Sum all the values of the input field on I dimensions and put the result in the output field at [0, J, K]
+        Sum all the values of the input field on K = 0 level
         :param in_field:
         :param out_field:
         :return:
-        """
-        sum = 0
-        for i in range(len(field)):
-            for j in range(len(field[i])):
-                sum += field[i][j][0]
-        return sum
+        """    
+        return np.sum(field[:, :, 0])
 
     @property
     def average_temperature(self) -> float:
