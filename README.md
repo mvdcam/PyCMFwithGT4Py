@@ -4,7 +4,7 @@
 
 This project is based on a previous work called PyCMF which aimed to experiment Object-Oriented technology and the use of Python in a Climate Modelling context. It concluded that OO brings a lot of flexibility and modularity to the code, but that it is not the best choice for performance. This project aims to improve the performance of the PyCMF framework by using GT4Py, a library that allows to generate high-performance code for stencil computations on structured grids. This project aimed to keep as much as possible the original structure of PyCMF, while adding the GT4Py code generation for the most performance-critical parts of the code. We will see that the performance of the code is greatly improved, but that the OO structure of PyCMF had to be adapted to the GT4Py code generation especially for the grid modelisation.
 
-The graphical interface of PyCMF has not been ported to this version, as it was not the main focus of this project and the code needed some adaptation as we use a newer Python version. 
+The graphical interface of PyCMF has not been ported to this version, as it was not the main focus of this project.
 
 ## Introduction
 
@@ -29,7 +29,7 @@ few examples with placeholder simulations such as the averaging of the temperatu
 - GT4Py for the stencils generation
 
 
-To run the framework, you can edit the script in `main.py` and then execute it with `python3.9 main.py`.
+To run the framework, you can edit the script in `main.py` and then execute it with `python3.11 src/main.py`.
 
 
 
