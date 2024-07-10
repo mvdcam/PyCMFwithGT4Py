@@ -43,6 +43,10 @@ if __name__ == "__main__":
     grid_shape = (50, 50, 80)
     nb_steps = 50
 
+    # Set to True to plot an interactive evolution of the temperature, False to compute at full speed
+    # Note that the plot will be updated every 0.1 seconds, slowing down the simulation in order to visualize it
+    visualisation = False
+
 
     universe = Universe()
     universe.sun = TickingSun()  # Can be replaced with Sun()
@@ -57,14 +61,18 @@ if __name__ == "__main__":
     print("Done.")
     print("Updating Universe 10 times...")
     print(universe)
+    
 
-    fig, ax, cax = init_graph()
+    if visualisation:
+        fig, ax, cax = init_graph() # Uncomment this line to plot the evolution of the temperature
 
     for i in trange(nb_steps):
         universe.update_all()
-        update_graph(cax)
+        if visualisation:
+            update_graph(cax) 
 
     print(universe)
-    final_plot()
+    if visualisation:
+        final_plot() # Uncomment this line to plot the evolution of the temperature
 
 
